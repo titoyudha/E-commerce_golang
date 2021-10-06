@@ -35,7 +35,8 @@ func (server *Server) Initialize(appConfig AppConfig, dbCongig DBConfig) {
 	fmt.Println("Welcome to " + appConfig.AppName)
 
 	var err error
-	dsn := "user:pass@tcp(127.0.0.1:3306)/go_shop?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable Timezone=Asia/Jakarta",
+		dbCongig.DBHost, dbCongig.DBUser, dbCongig.DBPassword, dbCongig.DBName, dbCongig.DBPort)
 
 	server.DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {

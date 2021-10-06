@@ -24,4 +24,5 @@ TECH STACK
    2. GORILLA MUX 
    3. GORM 
    4. PostgreSQL
-   5. BOOTSTRAP V5.0
+   5. MySQL
+   6. BOOTSTRAP V5.0
