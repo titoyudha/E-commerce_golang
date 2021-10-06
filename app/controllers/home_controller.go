@@ -6,5 +6,6 @@ import (
 )
 
 func Home(rw http.ResponseWriter, r *http.Request) {
+
 	fmt.Fprintf(rw, "Welcome to the Go Shop Home Page")
 }
