@@ -36,11 +36,10 @@ type DBConfig struct {
 	DBDriver   string
 }
 
-func (server *Server) Initialize(appConfig AppConfig, dbCongig DBConfig) {
+func (server *Server) Initialize(appConfig AppConfig, dbConfig DBConfig) {
 	fmt.Println("Welcome to " + appConfig.AppName)
 
 	server.InitializeRoutes()
-
 }
 
 func (server *Server) Run(addr string) {
@@ -64,14 +63,15 @@ func (server *Server) initializeDB(dbConfig DBConfig) {
 }
 
 func (server *Server) dbMigrate() {
-	for _, models := range RegisterModels() {
-		err := server.DB.Debug().AutoMigrate(models.Model)
+	for _, model := range RegisterModels() {
+		err := server.DB.Debug().AutoMigrate(model.Model)
 
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
-	fmt.Println("Database Succesfully Migrated")
+
+	fmt.Println("Database migrated successfully.")
 }
 
 func (server *Server) initCommands(config AppConfig, dbConfig DBConfig) {
@@ -107,40 +107,38 @@ func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
 	}
+
 	return fallback
 }
 
 func Run() {
 	var server = Server{}
 	var appConfig = AppConfig{}
-
-	var dbCongig = DBConfig{}
+	var dbConfig = DBConfig{}
 
 	err := godotenv.Load()
 	if err != nil {
-		panic(err)
+		log.Fatalf("Error on loading .env file")
 	}
+
+	appConfig.AppName = getEnv("APP_NAME", "GoToko")
+	appConfig.AppEnv = getEnv("APP_ENV", "development")
+	appConfig.AppPort = getEnv("APP_PORT", "9000")
+
+	dbConfig.DBHost = getEnv("DB_HOST", "localhost")
+	dbConfig.DBUser = getEnv("DB_USER", "user")
+	dbConfig.DBPassword = getEnv("DB_PASSWORD", "password")
+	dbConfig.DBName = getEnv("DB_NAME", "dbname")
+	dbConfig.DBPort = getEnv("DB_PORT", "5432")
+	dbConfig.DBDriver = getEnv("DB_DRIVER", "postgres")
 
 	flag.Parse()
 	arg := flag.Arg(0)
+
 	if arg != "" {
-		server.initCommands(appConfig, dbCongig)
+		server.initCommands(appConfig, dbConfig)
 	} else {
-		server.Initialize(appConfig, dbCongig)
+		server.Initialize(appConfig, dbConfig)
 		server.Run(":" + appConfig.AppPort)
 	}
-
-	appConfig.AppName = getEnv("APP_NAME", "default app name")
-	appConfig.AppEnv = getEnv("APP_ENV", "default app env")
-	appConfig.AppPort = getEnv("APP_PORT", "default app port")
-
-	dbCongig.DBHost = getEnv("DB_HOST", "localhost")
-	dbCongig.DBUser = getEnv("DB_USER", "go_shop")
-	dbCongig.DBPassword = getEnv("DB_PASSWORD", "")
-	dbCongig.DBName = getEnv("DB_NAME", "go_shop")
-	dbCongig.DBPort = getEnv("DB_PORT", "3306")
-	dbCongig.DBDriver = getEnv("DB_DRIVER", "postgresql")
-
-	server.Initialize(appConfig, dbCongig)
-	server.Run(":" + appConfig.AppPort)
 }
